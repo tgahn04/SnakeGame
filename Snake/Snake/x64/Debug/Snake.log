@@ -1,0 +1,7 @@
+﻿  Source.c
+C:\Users\tgahn\OneDrive\바탕 화면\SnakeGame\Snake\Source.c(11,44): error C2146: 구문 오류: ')'이(가) 'snake' 식별자 앞에 없습니다.
+C:\Users\tgahn\OneDrive\바탕 화면\SnakeGame\Snake\Source.c(11,38): error C2081: 'Snake': 정식 매개 변수 목록에 있는 이름이 잘못되었습니다.
+C:\Users\tgahn\OneDrive\바탕 화면\SnakeGame\Snake\Source.c(11,44): error C2061: 구문 오류: 식별자 'snake'
+C:\Users\tgahn\OneDrive\바탕 화면\SnakeGame\Snake\Source.c(11,44): error C2059: 구문 오류: ';'
+C:\Users\tgahn\OneDrive\바탕 화면\SnakeGame\Snake\Source.c(11,49): error C2059: 구문 오류: ','
+C:\Users\tgahn\OneDrive\바탕 화면\SnakeGame\Snake\Source.c(11,60): error C2059: 구문 오류: ')'
