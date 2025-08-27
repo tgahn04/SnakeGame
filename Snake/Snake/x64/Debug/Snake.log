@@ -1,2 +1,2 @@
-﻿  Source.c
-  Snake.vcxproj -> C:\Users\tgahn\OneDrive\바탕 화면\SnakeGame\Snake\x64\Debug\Snake.exe
+﻿Source.obj : error LNK2005: main이(가) Source 1.obj에 이미 정의되어 있습니다.
+C:\Users\tgahn\OneDrive\바탕 화면\SnakeGame\Snake\x64\Debug\Snake.exe : fatal error LNK1169: 여러 번 정의된 기호가 있습니다.
