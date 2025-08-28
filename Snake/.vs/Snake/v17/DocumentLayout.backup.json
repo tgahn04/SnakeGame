@@ -5,10 +5,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{DF1DF4EA-E428-47FF-B7FB-36401C07001B}|Snake.vcxproj|C:\\Users\\tgahn\\OneDrive\\\uBC14\uD0D5 \uD654\uBA74\\SnakeGame\\Snake\\Source 1.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
       "RelativeMoniker": "D:0:0:{DF1DF4EA-E428-47FF-B7FB-36401C07001B}|Snake.vcxproj|solutionrelative:Source 1.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{DF1DF4EA-E428-47FF-B7FB-36401C07001B}|Snake.vcxproj|C:\\Users\\tgahn\\OneDrive\\\uBC14\uD0D5 \uD654\uBA74\\SnakeGame\\Snake\\Source.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{DF1DF4EA-E428-47FF-B7FB-36401C07001B}|Snake.vcxproj|solutionrelative:Source.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     }
   ],
   "DocumentGroupContainers": [
@@ -28,22 +24,9 @@
               "RelativeDocumentMoniker": "Source 1.c",
               "ToolTip": "C:\\Users\\tgahn\\OneDrive\\\uBC14\uD0D5 \uD654\uBA74\\SnakeGame\\Snake\\Source 1.c",
               "RelativeToolTip": "Source 1.c",
-              "ViewState": "AgIAAF8AAAAAAAAAAAAAAJUAAAACAAAAAAAAAA==",
+              "ViewState": "AgIAALgAAAAAAAAAAADgv9AAAAAEAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
               "WhenOpened": "2025-08-27T09:27:42.103Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "Source.c",
-              "DocumentMoniker": "C:\\Users\\tgahn\\OneDrive\\\uBC14\uD0D5 \uD654\uBA74\\SnakeGame\\Snake\\Source.c",
-              "RelativeDocumentMoniker": "Source.c",
-              "ToolTip": "C:\\Users\\tgahn\\OneDrive\\\uBC14\uD0D5 \uD654\uBA74\\SnakeGame\\Snake\\Source.c",
-              "RelativeToolTip": "Source.c",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAACgAAAAKAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
-              "WhenOpened": "2025-08-25T09:06:44.19Z",
               "EditorCaption": ""
             }
           ]

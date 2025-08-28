@@ -1,2 +1,3 @@
-﻿Source.obj : error LNK2005: main이(가) Source 1.obj에 이미 정의되어 있습니다.
-C:\Users\tgahn\OneDrive\바탕 화면\SnakeGame\Snake\x64\Debug\Snake.exe : fatal error LNK1169: 여러 번 정의된 기호가 있습니다.
+﻿  Source 1.c
+C:\Users\tgahn\OneDrive\바탕 화면\SnakeGame\Snake\Source 1.c(117,11): warning C4305: '초기화 중': 'int'에서 'char'(으)로 잘립니다.
+  Snake.vcxproj -> C:\Users\tgahn\OneDrive\바탕 화면\SnakeGame\Snake\x64\Debug\Snake.exe
