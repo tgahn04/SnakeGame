@@ -34,8 +34,15 @@ typedef struct
 {
 	int x;
 	int y;
-
+	const char* shape;
 } Food;
+
+typedef struct
+{
+	int x;
+	int y;
+	const char* shape;
+} Poison;
 
 void initialize()
 {
@@ -112,11 +119,19 @@ void renderSnake(Snake snake)
 void renderFood(Food food)
 {
 	DWORD dword;
-
 	COORD position = {food.x, food.y};
-	char f = '¢¾';
+
 	SetConsoleCursorPosition(screen[screen_index], position);
-	WriteFile(screen[screen_index], &f, 1, &dword, NULL);
+	WriteFile(screen[screen_index], &food.shape, 1, &dword, NULL);
+}
+
+void renderPoison(Poison poison)
+{
+	DWORD dword;
+	COORD position = { poison.x, poison.y };
+
+	SetConsoleCursorPosition(screen[screen_index], position);
+	WriteFile(screen[screen_index], &poison.shape, 1, &dword, NULL);
 }
 
  void renderField()
@@ -146,19 +161,19 @@ void renderFood(Food food)
  	}
  }
 
- void SnakeMove(Snake snake)
+ void SnakeMove(Snake* snake)
  {
-	 for (int i = snake.length - 1; i > 0; i--)
+	 for (int i = snake->length - 1; i > 0; i--)
 	 {
-		 snake.position[i] = snake.position[i - 1];
+		 snake->position[i] = snake->position[i - 1];
 	 }
-
-	 switch (snake.direction)
+	 
+	 switch (snake->direction)
 	 {
-	 case UP:    snake.position[0].y--; break;
-	 case DOWN:  snake.position[0].y++; break;
-	 case LEFT:  snake.position[0].x--; break;
-	 case RIGHT: snake.position[0].x++; break;
+	 case UP:    snake->position[0].y--; break;
+	 case DOWN:  snake->position[0].y++; break;
+	 case LEFT:  snake->position[0].x--; break;
+	 case RIGHT: snake->position[0].x++; break;
 	 }
  }
 
@@ -168,21 +183,33 @@ void renderFood(Food food)
 	 f->y = rand() % (HEIGHT - 2) + 1;
  }
 
+ void SpawnPoison(Poison* p)
+ {
+	 p->x = rand() % (WIDTH - 2) + 1;
+	 p->y = rand() % (HEIGHT - 2) + 1;
+ }
+
 int main()
 {
 	srand((unsigned int)time(NULL));
 
+	Food f;
+	//Poison p;
+	f.shape = 'F';
+	//p.shape = 'P';
 	Snake snake;
-	snake.length = 3;
-	snake.direction = RIGHT;
-	snake.position[0].x = WIDTH / 2;
-	snake.position[0].y = HEIGHT / 2;
-	snake.position[1].x = WIDTH / 2 - 1;
-	snake.position[1].y = HEIGHT / 2;
-	snake.position[2].x = WIDTH / 2 - 2;
-	snake.position[2].y = HEIGHT / 2;
 
+	snake.length = 5;
+	snake.direction = RIGHT;
+
+	for (int i = 0; i < snake.length; i++)
+	{
+			snake.position[i].x = WIDTH / 2 - i;
+			snake.position[i].y = HEIGHT / 2;
+	}
+	
 	initialize();
+	SpawnFood(&f);
 
 	while (1)
 	{
@@ -199,26 +226,29 @@ int main()
 				case RIGHT: if (snake.direction != LEFT) snake.direction = RIGHT; break;
 				case DOWN:	if (snake.direction != UP) snake.direction = DOWN; break;
 			}
-
-			switch (snake.direction)
-			{
-			case UP:    snake.position[0].y--; break;
-			case DOWN:  snake.position[0].y++; break;
-			case LEFT:  snake.position[0].x--; break;
-			case RIGHT: snake.position[0].x++; break;
-			}
-			
-			for (int i = snake.length; i > 0; i--)
-			{
-				snake.position[i] = snake.position[i - 1];
-			}
-			
-			
+				
 		}
-		
+
+		SnakeMove(&snake);
+
+		if (snake.position[0].x == f.x && snake.position[0].y == f.y)
+		{
+			snake.length++;
+			SpawnFood(&f);
+		}
+
+		if (snake.position[0].x <= 0 || snake.position[0].x >= WIDTH - 1 ||
+			snake.position[0].y <= 0 || snake.position[0].y >= HEIGHT - 1)
+		{
+			printf("\nGAME_OVER\n");
+			break;
+		}
+
 		clear();
 		renderField();
 		renderSnake(snake);
+		renderFood(f);	
+	//	renderPoison(p);
 		flip();
 	}
 	release();
