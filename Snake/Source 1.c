@@ -5,7 +5,7 @@
 #include <windows.h>
 
 #define WIDTH	100
-#define HEIGHT  25
+#define HEIGHT  50
 #define UP		72
 #define DOWN	80
 #define LEFT	75
@@ -116,22 +116,22 @@ void renderSnake(Snake snake)
 	}
 }
 
-void renderFood(Food food)
+void renderFood(Food *food)
 {
 	DWORD dword;
-	COORD position = {food.x, food.y};
+	COORD position = {food->x, food->y};
 
 	SetConsoleCursorPosition(screen[screen_index], position);
-	WriteFile(screen[screen_index], &food.shape, 1, &dword, NULL);
+	WriteFile(screen[screen_index], food->shape, 1, &dword, NULL);
 }
 
-void renderPoison(Poison poison)
+void renderPoison(Poison* poison)
 {
 	DWORD dword;
-	COORD position = { poison.x, poison.y };
+	COORD position = { poison->x, poison->y };
 
 	SetConsoleCursorPosition(screen[screen_index], position);
-	WriteFile(screen[screen_index], &poison.shape, 1, &dword, NULL);
+	WriteFile(screen[screen_index], poison->shape, 1, &dword, NULL);
 }
 
  void renderField()
@@ -170,10 +170,10 @@ void renderPoison(Poison poison)
 	 
 	 switch (snake->direction)
 	 {
-	 case UP:    snake->position[0].y--; break;
-	 case DOWN:  snake->position[0].y++; break;
-	 case LEFT:  snake->position[0].x--; break;
-	 case RIGHT: snake->position[0].x++; break;
+	 case UP	:	snake->position[0].y--; break;
+	 case DOWN	:	snake->position[0].y++; break;
+	 case LEFT	:	snake->position[0].x--; break;
+	 case RIGHT	:	snake->position[0].x++; break;
 	 }
  }
 
@@ -193,23 +193,35 @@ int main()
 {
 	srand((unsigned int)time(NULL));
 
+	printf("---- Snake_Game ----\n\n");
+	printf("조작법 : 방향키\n\n");
+	printf("F를 먹으면 길이 + 1\n");
+	printf("P를 먹으면 길이 - 1\n");
+	printf("벽이나 자신의 몸에 부딪히면 게임오버입니다.\n\n");
+	printf("아무 키나 누르면 시작합니다.\n");
+
+	_getch();
+
+	system("cls");
+
 	Food f;
 	//Poison p;
-	f.shape = 'F';
+	f.shape = "F";
 	//p.shape = 'P';
 	Snake snake;
 
-	snake.length = 5;
+	snake.length = 20;
 	snake.direction = RIGHT;
 
 	for (int i = 0; i < snake.length; i++)
 	{
-			snake.position[i].x = WIDTH / 2 - i;
-			snake.position[i].y = HEIGHT / 2;
+		snake.position[i].x = WIDTH / 2 - i;
+		snake.position[i].y = HEIGHT / 2;
 	}
 	
 	initialize();
 	SpawnFood(&f);
+	//SpawnPoison(&p);
 
 	while (1)
 	{
@@ -218,15 +230,14 @@ int main()
 			int key = _getch();
 
 			if (key == 0 || key == 224) key = _getch();
-
+			
 			switch (key)
 			{
-				case UP :	if (snake.direction != DOWN) snake.direction = UP; break;
-				case LEFT:	if (snake.direction != RIGHT) snake.direction = LEFT; break;
-				case RIGHT: if (snake.direction != LEFT) snake.direction = RIGHT; break;
-				case DOWN:	if (snake.direction != UP) snake.direction = DOWN; break;
+				case UP		:	if (snake.direction != DOWN) snake.direction = UP; break;
+				case LEFT	:	if (snake.direction != RIGHT) snake.direction = LEFT; break;
+				case RIGHT	:	if (snake.direction != LEFT) snake.direction = RIGHT; break;
+				case DOWN	:	if (snake.direction != UP) snake.direction = DOWN; break;
 			}
-				
 		}
 
 		SnakeMove(&snake);
@@ -237,6 +248,7 @@ int main()
 			SpawnFood(&f);
 		}
 
+		
 		if (snake.position[0].x <= 0 || snake.position[0].x >= WIDTH - 1 ||
 			snake.position[0].y <= 0 || snake.position[0].y >= HEIGHT - 1)
 		{
@@ -244,13 +256,27 @@ int main()
 			break;
 		}
 
+		for (int i = 1; i < snake.length; i++)
+		{
+			if (snake.position[0].x == snake.position[i].x &&
+				snake.position[0].y == snake.position[i].y)
+			{
+				printf("\nGAME_OVER\n");
+				exit(0);
+				break;
+			}
+		}
+
 		clear();
 		renderField();
 		renderSnake(snake);
-		renderFood(f);	
-	//	renderPoison(p);
+		renderFood(&f);	
+	//	renderPoison(&p);
 		flip();
 	}
 	release();
+
+	Sleep(100);
+
 	return 0;
 }
