@@ -10,6 +10,8 @@
 #define DOWN	80
 #define LEFT	75
 #define RIGHT	77
+#define MAX_FOOD 15
+#define MAX_POISON 20
 
 int screen_index;
 
@@ -43,6 +45,12 @@ typedef struct
 	int y;
 	const char* shape;
 } Poison;
+
+Food* food = NULL;
+int food_count = 0;
+
+Poison* poison = NULL;
+int poison_count = 0;
 
 void initialize()
 {
@@ -125,6 +133,14 @@ void renderFood(Food *food)
 	WriteFile(screen[screen_index], food->shape, 1, &dword, NULL);
 }
 
+void renderFoods()
+{
+	for (int i = 0; i < food_count; i++)
+	{
+		renderFood(&food[i]);
+	}
+}
+
 void renderPoison(Poison* poison)
 {
 	DWORD dword;
@@ -132,6 +148,14 @@ void renderPoison(Poison* poison)
 
 	SetConsoleCursorPosition(screen[screen_index], position);
 	WriteFile(screen[screen_index], poison->shape, 1, &dword, NULL);
+}
+
+void renderPoisons()
+{
+	for (int i = 0; i < poison_count; i++)
+	{
+		renderPoison(&poison[i]);
+	}
 }
 
  void renderField()
@@ -177,16 +201,74 @@ void renderPoison(Poison* poison)
 	 }
  }
 
- void SpawnFood(Food* f)
+ int HitCheck(int x, int y, Snake* snake)
  {
-	 f->x = rand() % (WIDTH - 2) + 1;
-	 f->y = rand() % (HEIGHT - 2) + 1;
+	 for (int i = 0; i < snake->length; i++)
+		 if (snake->position[i].x == x && snake->position[i].y == y) 
+			 return 1;
+
+	 for (int i = 0; i < food_count; i++)
+		 if (food[i].x == x && food[i].y == y) 
+			 return 1;
+
+	 for (int i = 0; i < poison_count; i++)
+		 if (poison[i].x == x && poison[i].y == y) 
+			 return 1;
+
+	 return 0;
  }
 
- void SpawnPoison(Poison* p)
+ void SpawnFood(Snake* snake)
  {
-	 p->x = rand() % (WIDTH - 2) + 1;
-	 p->y = rand() % (HEIGHT - 2) + 1;
+	 if (food_count >= MAX_FOOD)
+		 return;
+
+	 int x, y;
+	 do 
+	 {
+		 x = rand() % (WIDTH - 3) + 1;
+		 y = rand() % (HEIGHT - 3) + 1;
+	 } 
+	 while (HitCheck(x, y, snake));
+
+	 food[food_count].x = rand() % (WIDTH - 3) + 1;
+	 food[food_count].y = rand() % (WIDTH - 3) + 1;
+	 food[food_count].shape = "F";
+	 food_count++;
+ }
+
+ void SpawnPoison(Snake* snake)
+ {
+	 if (poison_count >= MAX_POISON)
+		 return;
+
+	 int x, y;
+	 do
+	 {
+		 x = rand() % (WIDTH - 3) + 1;
+		 y = rand() % (HEIGHT - 3) + 1;
+	 } while (HitCheck(x, y, snake));
+
+	 poison[poison_count].x = rand() % (WIDTH - 3) + 1;
+	 poison[poison_count].y = rand() % (WIDTH - 3) + 1;
+	 poison[poison_count].shape = "P";
+	 poison_count++;
+ }
+ 
+ void RemoveFood(int i)
+ {
+	 if (i < 0 || i >= food_count)
+		 return;
+	 food[i] = food[food_count - 1];
+	 food_count--;
+ }
+
+ void RemovePoison(int i)
+ {
+	 if (i < 0 || i >= poison_count)
+		 return;
+	 poison[i] = poison[poison_count - 1];
+	 poison_count--;
  }
 
 int main()
@@ -204,13 +286,8 @@ int main()
 
 	system("cls");
 
-	Food f;
-	//Poison p;
-	f.shape = "F";
-	//p.shape = 'P';
 	Snake snake;
-
-	snake.length = 20;
+	snake.length = 3;
 	snake.direction = RIGHT;
 
 	for (int i = 0; i < snake.length; i++)
@@ -218,13 +295,26 @@ int main()
 		snake.position[i].x = WIDTH / 2 - i;
 		snake.position[i].y = HEIGHT / 2;
 	}
+
+	food = (Food*)malloc(MAX_FOOD * sizeof(Food));
+	poison = (Poison*)malloc(MAX_POISON * sizeof(Poison));
 	
 	initialize();
-	SpawnFood(&f);
-	//SpawnPoison(&p);
+	SpawnFood(&snake);
+	SpawnPoison(&snake);
+
+	DWORD last_time = GetTickCount();
 
 	while (1)
 	{
+		DWORD current_time = GetTickCount();
+		if (current_time - last_time >= 10000)
+		{
+			SpawnFood(&snake);
+			SpawnPoison(&snake);
+			last_time = current_time;
+		}
+
 		if (_kbhit())
 		{
 			int key = _getch();
@@ -242,12 +332,25 @@ int main()
 
 		SnakeMove(&snake);
 
-		if (snake.position[0].x == f.x && snake.position[0].y == f.y)
+		for (int i = 0; i < food_count; i++)
 		{
-			snake.length++;
-			SpawnFood(&f);
+			if (snake.position[0].x == food[i].x && snake.position[0].y == food[i].y)
+			{
+				snake.length++;
+				RemoveFood(i);
+				break;
+			}
 		}
 
+		for (int i = 0; i < poison_count; i++)
+		{
+			if (snake.position[0].x == poison[i].x && snake.position[0].y == poison[i].y)
+			{
+				snake.length--;
+				RemovePoison(i);
+				break;
+			}
+		}
 		
 		if (snake.position[0].x <= 0 || snake.position[0].x >= WIDTH - 1 ||
 			snake.position[0].y <= 0 || snake.position[0].y >= HEIGHT - 1)
@@ -270,13 +373,15 @@ int main()
 		clear();
 		renderField();
 		renderSnake(snake);
-		renderFood(&f);	
-	//	renderPoison(&p);
+		renderFoods();	
+		renderPoisons();
 		flip();
 	}
-	release();
 
-	Sleep(100);
+	free(food);
+	free(poison);
+	release();
+	
 
 	return 0;
 }
