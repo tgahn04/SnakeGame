@@ -12,6 +12,7 @@
 #define RIGHT	77
 #define MAX_FOOD 15
 #define MAX_POISON 20
+#define MAX_WALL 500
 
 int screen_index;
 
@@ -28,6 +29,7 @@ typedef struct
 {
 	int length;
 	int direction;
+	int score;
 	Position position[100];
 
 } Snake;
@@ -39,18 +41,28 @@ typedef struct
 	const char* shape;
 } Food;
 
-typedef struct
-{
-	int x;
-	int y;
-	const char* shape;
-} Poison;
+ typedef struct
+ {
+ 	int x;
+ 	int y;
+ 	const char* shape;
+ } Poison;
+
+ typedef struct
+ {
+	 int x;
+	 int y;
+	 const char* shape;
+ } Wall;
 
 Food* food = NULL;
 int food_count = 0;
 
 Poison* poison = NULL;
 int poison_count = 0;
+
+Wall* wall = NULL;
+int wall_count = 0;
 
 void initialize()
 {
@@ -151,14 +163,31 @@ void renderPoison(Poison* poison)
 }
 
 void renderPoisons()
-{
-	for (int i = 0; i < poison_count; i++)
-	{
-		renderPoison(&poison[i]);
-	}
-}
+ {
+ 	for (int i = 0; i < poison_count; i++)
+ 	{
+ 		renderPoison(&poison[i]);
+ 	}
+ }
 
- void renderField()
+void renderWall(Wall* wall)
+ {
+	 DWORD dword;
+	 COORD position = { wall->x, wall->y };
+
+	 SetConsoleCursorPosition(screen[screen_index], position);
+	 WriteFile(screen[screen_index], wall->shape, 1, &dword, NULL);
+ }
+
+void renderWalls()
+ {
+	 for (int i = 0; i < wall_count; i++)
+	 {
+		 renderWall(&wall[i]);
+	 }
+ }
+
+void renderField()
  {
 	 DWORD dword;
 
@@ -185,7 +214,17 @@ void renderPoisons()
  	}
  }
 
- void SnakeMove(Snake* snake)
+void renderScore(Snake* snake)
+{
+	DWORD dword;
+	COORD position = { WIDTH + 1, HEIGHT + 1 };
+	char buffer[50];
+	sprintf_s(buffer, sizeof(buffer), "점수 : %d", snake->score);
+	SetConsoleCursorPosition(screen[screen_index], position);
+	WriteFile(screen[screen_index], buffer, (DWORD)strlen(buffer), &dword, NULL);
+}
+
+void SnakeMove(Snake* snake)
  {
 	 for (int i = snake->length - 1; i > 0; i--)
 	 {
@@ -201,7 +240,7 @@ void renderPoisons()
 	 }
  }
 
- int HitCheck(int x, int y, Snake* snake)
+int HitCheck(int x, int y, Snake* snake)
  {
 	 for (int i = 0; i < snake->length; i++)
 		 if (snake->position[i].x == x && snake->position[i].y == y) 
@@ -215,10 +254,14 @@ void renderPoisons()
 		 if (poison[i].x == x && poison[i].y == y) 
 			 return 1;
 
+	 for (int i = 0; i < wall_count; i++)
+		 if (wall[i].x == x && wall[i].y == y)
+			 return 1;
+
 	 return 0;
  }
 
- void SpawnFood(Snake* snake)
+void SpawnFood(Snake* snake)
  {
 	 if (food_count >= MAX_FOOD)
 		 return;
@@ -231,13 +274,13 @@ void renderPoisons()
 	 } 
 	 while (HitCheck(x, y, snake));
 
-	 food[food_count].x = rand() % (WIDTH - 3) + 1;
-	 food[food_count].y = rand() % (WIDTH - 3) + 1;
-	 food[food_count].shape = "F";
+	 food[food_count].x = x;
+	 food[food_count].y = y;
+	 food[food_count].shape = "*";
 	 food_count++;
  }
 
- void SpawnPoison(Snake* snake)
+void SpawnPoison(Snake* snake)
  {
 	 if (poison_count >= MAX_POISON)
 		 return;
@@ -247,15 +290,58 @@ void renderPoisons()
 	 {
 		 x = rand() % (WIDTH - 3) + 1;
 		 y = rand() % (HEIGHT - 3) + 1;
-	 } while (HitCheck(x, y, snake));
+	 } 
+	 while (HitCheck(x, y, snake));
 
-	 poison[poison_count].x = rand() % (WIDTH - 3) + 1;
-	 poison[poison_count].y = rand() % (WIDTH - 3) + 1;
-	 poison[poison_count].shape = "P";
+	 poison[poison_count].x = x;
+	 poison[poison_count].y = y;
+	 poison[poison_count].shape = "!";
 	 poison_count++;
  }
- 
- void RemoveFood(int i)
+
+void SpawnWall(Snake* snake)
+{
+	if (wall_count >= MAX_WALL)
+		return;
+
+	int direction = rand() % 2;
+	int length = (direction == 0) ? 20 : 10;
+
+	int x, y;
+	int tries = 0;
+
+	do
+	{
+		x = rand() % (WIDTH - (direction == 0 ? length : 1) - 1) + 1;
+		y = rand() % (HEIGHT - (direction == 1 ? length : 1) - 1) + 1;
+
+		int overlap = 0;
+
+		for (int i = 0; i < length; i++)
+		{
+			int nx = x + (direction == 0 ? i : 0);
+			int ny = y + (direction == 1 ? i : 0);
+			if (HitCheck(nx, ny, snake)) 
+			{
+				overlap = 1;
+				break;
+			}
+		}
+		if (!overlap) break;
+
+		tries++;
+	} while (tries < 100);
+
+	for (int i = 0; i < length && wall_count < MAX_WALL; i++)
+	{
+		wall[wall_count].x = x + (direction == 0 ? i : 0);
+		wall[wall_count].y = y + (direction == 1 ? i : 0);
+		wall[wall_count].shape = "#";
+		wall_count++;
+	}
+}
+
+void RemoveFood(int i)
  {
 	 if (i < 0 || i >= food_count)
 		 return;
@@ -263,13 +349,21 @@ void renderPoisons()
 	 food_count--;
  }
 
- void RemovePoison(int i)
- {
-	 if (i < 0 || i >= poison_count)
-		 return;
-	 poison[i] = poison[poison_count - 1];
-	 poison_count--;
- }
+void RemovePoison(int i)
+{
+	if (i < 0 || i >= poison_count)
+	 return;
+	poison[i] = poison[poison_count - 1];
+	poison_count--;
+}
+
+void RemoveWall(int i)
+{
+	if (i < 0 || i >= wall_count)
+		return;
+	wall[i] = wall[wall_count - 1];
+	wall_count--;
+}
 
 int main()
 {
@@ -277,8 +371,9 @@ int main()
 
 	printf("---- Snake_Game ----\n\n");
 	printf("조작법 : 방향키\n\n");
-	printf("F를 먹으면 길이 + 1\n");
-	printf("P를 먹으면 길이 - 1\n");
+	printf("'*'를 먹으면 길이 & 점수 + 1\n");
+	printf("'!'를 먹으면 길이 & 점수 - 1\n");
+	printf("20점을 모으면 게임 클리어입니다.\n");
 	printf("벽이나 자신의 몸에 부딪히면 게임오버입니다.\n\n");
 	printf("아무 키나 누르면 시작합니다.\n");
 
@@ -289,6 +384,7 @@ int main()
 	Snake snake;
 	snake.length = 3;
 	snake.direction = RIGHT;
+	snake.score = 0;
 
 	for (int i = 0; i < snake.length; i++)
 	{
@@ -298,10 +394,12 @@ int main()
 
 	food = (Food*)malloc(MAX_FOOD * sizeof(Food));
 	poison = (Poison*)malloc(MAX_POISON * sizeof(Poison));
-	
+	wall = (Wall*)malloc(MAX_WALL * sizeof(Wall));
+
 	initialize();
 	SpawnFood(&snake);
 	SpawnPoison(&snake);
+	SpawnWall(&snake);
 
 	DWORD last_time = GetTickCount();
 
@@ -312,6 +410,7 @@ int main()
 		{
 			SpawnFood(&snake);
 			SpawnPoison(&snake);
+			SpawnWall(&snake);
 			last_time = current_time;
 		}
 
@@ -337,6 +436,7 @@ int main()
 			if (snake.position[0].x == food[i].x && snake.position[0].y == food[i].y)
 			{
 				snake.length++;
+				snake.score++;
 				RemoveFood(i);
 				break;
 			}
@@ -347,15 +447,31 @@ int main()
 			if (snake.position[0].x == poison[i].x && snake.position[0].y == poison[i].y)
 			{
 				snake.length--;
+				snake.score--;
 				RemovePoison(i);
 				break;
 			}
 		}
+
+		for (int i = 0; i < wall_count; i++)
+		{
+			if (snake.position[0].x == wall[i].x &&
+				 snake.position[0].y == wall[i].y)
+			{
+				 printf("\nGAME_OVER\n\n점수 : %d\n", snake.score);
+				 _getch();
+				 exit(0);
+				 break;
+			}
+		}
+
 		
 		if (snake.position[0].x <= 0 || snake.position[0].x >= WIDTH - 1 ||
 			snake.position[0].y <= 0 || snake.position[0].y >= HEIGHT - 1)
 		{
-			printf("\nGAME_OVER\n");
+			printf("\nGAME_OVER\n\n점수 : %d\n", snake.score);
+			_getch();
+			exit(0);
 			break;
 		}
 
@@ -364,10 +480,19 @@ int main()
 			if (snake.position[0].x == snake.position[i].x &&
 				snake.position[0].y == snake.position[i].y)
 			{
-				printf("\nGAME_OVER\n");
+				printf("\nGAME_OVER\n\n점수 : %d\n", snake.score);
+				_getch();
 				exit(0);
 				break;
 			}
+		}
+
+		if (snake.score >= 20)
+		{
+			printf("\nGAME_CLEAR!\n점수: %d\n", snake.score);
+			_getch();
+			exit(0);
+			break;
 		}
 
 		clear();
@@ -375,11 +500,14 @@ int main()
 		renderSnake(snake);
 		renderFoods();	
 		renderPoisons();
+		renderWalls();
+		renderScore(&snake);
 		flip();
 	}
 
 	free(food);
 	free(poison);
+	free(wall);
 	release();
 	
 
