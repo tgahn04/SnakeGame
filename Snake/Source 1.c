@@ -386,6 +386,8 @@ int main()
 	snake.direction = RIGHT;
 	snake.score = 0;
 
+	int gameover = 0;
+
 	for (int i = 0; i < snake.length; i++)
 	{
 		snake.position[i].x = WIDTH / 2 - i;
@@ -458,10 +460,9 @@ int main()
 			if (snake.position[0].x == wall[i].x &&
 				 snake.position[0].y == wall[i].y)
 			{
-				 printf("\nGAME_OVER\n\n점수 : %d\n", snake.score);
-				 _getch();
-				 exit(0);
-				 break;
+				printf("\nGAME_OVER\n\n점수 : %d\n", snake.score);
+				gameover = 1;
+				break;
 			}
 		}
 
@@ -470,9 +471,7 @@ int main()
 			snake.position[0].y <= 0 || snake.position[0].y >= HEIGHT - 1)
 		{
 			printf("\nGAME_OVER\n\n점수 : %d\n", snake.score);
-			_getch();
-			exit(0);
-			break;
+			gameover = 1;
 		}
 
 		for (int i = 1; i < snake.length; i++)
@@ -481,17 +480,22 @@ int main()
 				snake.position[0].y == snake.position[i].y)
 			{
 				printf("\nGAME_OVER\n\n점수 : %d\n", snake.score);
-				_getch();
-				exit(0);
+				gameover = 1;
 				break;
 			}
+			break;
 		}
 
 		if (snake.score >= 20)
 		{
 			printf("\nGAME_CLEAR!\n점수: %d\n", snake.score);
 			_getch();
-			exit(0);
+			gameover = 1;
+		}
+
+		if (gameover)
+		{
+			_getch();
 			break;
 		}
 
@@ -509,7 +513,9 @@ int main()
 	free(poison);
 	free(wall);
 	release();
-	
+
+	printf("\n게임을 종료하려면 아무 키나 누르시오.\n");
+	_getch();
 
 	return 0;
 }
